@@ -26,12 +26,15 @@ module Displayable
   end
   class Players
     include Displayable
+
     attr_accessor :mark, :name, :sequence
+
     COMPUTER_NAMES = %w(Robocop Terminator MyRobot Robottina)
+
+    @@human_mark = ''
   
     def initialize
       @sequence = []
-      @human_mark = ''
       settings
     end
   
@@ -55,6 +58,7 @@ module Displayable
         prompt("Sorry, wrong option, just enter X or O")
       end
       self.mark = option
+      @@human_mark = option
       any_key_to_continue?
     end
   
@@ -77,8 +81,6 @@ module Displayable
   end
   
   class Computer < Players
-
-    attr_reader :human_mark
   
     def settings
       set_mark
@@ -86,7 +88,7 @@ module Displayable
     end
 
     def set_mark
-      self.mark = (human_mark == 'X' ?  'O' : 'X')
+      self.mark = (@@human_mark == 'X' ? 'O' : 'X')
     end
   
     def set_name
@@ -98,7 +100,7 @@ module Displayable
   class Game
     include Displayable
 
-    attr_accessor :human, :computer
+    attr_accessor :human, :computer, :grid
   
     def initialize_grid
       board = {}
@@ -107,19 +109,19 @@ module Displayable
     end
   
     def display_grid!(grid)
-      prompt("        Current board")
+      puts "Current playing board".center(49)
       skip
-      puts "       |     |     |     |"
-      puts "       |  #{grid[1]}  |  #{grid[2]}  |  #{grid[3]}  |"
-      puts "       |     |     |     |"
-      puts "       |-----|-----|-----|"
-      puts "       |     |     |     |"
-      puts "       |  #{grid[4]}  |  #{grid[5]}  |  #{grid[6]}  |"
-      puts "       |     |     |     |"
-      puts "       |-----|-----|-----|"
-      puts "       |     |     |     |"
-      puts "       |  #{grid[7]}  |  #{grid[8]}  |  #{grid[9]}  |"
-      puts "       |     |     |     |"
+      puts "|     |     |     |".center(49)
+      puts "|  #{grid[1]}  |  #{grid[2]}  |  #{grid[3]}  |".center(49)
+      puts "|     |     |     |".center(49)
+      puts "|-----|-----|-----|".center(49)
+      puts "|     |     |     |".center(49)
+      puts "|  #{grid[4]}  |  #{grid[5]}  |  #{grid[6]}  |".center(49)
+      puts "|     |     |     |".center(49)
+      puts "|-----|-----|-----|".center(49)
+      puts "|     |     |     |".center(49)
+      puts "|  #{grid[7]}  |  #{grid[8]}  |  #{grid[9]}  |".center(49)
+      puts "|     |     |     |".center(49)
       skip
     end
   
@@ -136,30 +138,31 @@ module Displayable
     end
   
     def get_available_squares(grid)
-      grid.keys.select { |_,value| value == ' ' }
+      grid.select { |_,value| value == ' ' }.keys
     end
   
-    def human_moves!(grid)
+    def human_marks!(grid, human)
       available_array = get_available_squares(grid)
       prompt("Select one available square from: #{available_array}")
       selection = ''
       loop do
         selection = gets.chomp
-        break if selection.match?(/^\d$/) && available_array.include?(selection)
+        break if selection.match?(/^\d$/) && available_array.include?(selection.to_i)
         prompt("Wrong selection, try again please")
       end
-      grid[selection] = self.mark
-      self.sequence << selection
+      key = selection.to_i
+      grid[key] = human.mark
+      human.sequence << key
     end
   
-    def computer_marks!(grid)
+    def computer_marks!(grid, computer)
       selection = get_available_squares.sample
-      grid[selection] = self.mark
-      self.sequence << selection
+      grid[selection] = computer.mark
+      computer.sequence << selection
     end
   
     def marking!(player, grid)
-      player.class = Human ? human_marks!(grid) : computer_marks!(grid)
+      player.class == Human ? human_marks!(grid, player) : computer_marks!(grid, player)
   
     end
   
@@ -176,42 +179,49 @@ module Displayable
     end
   
     def separating_line
-      puts "|----------------|----------------|"
+      puts "       |----------------|----------------|"
     end
   
-    def names_line
-      puts "| #{human.name}    | #{computer.name}      |"
+    def names_line(human, computer)
+      puts "       |#{human.name.center(16)}|#{computer.name.center(16)}|"
     end
   
-    def marks_lines
-      puts "| #{human.mark}    | #{computer.mark}      |"
+    def marks_lines(human, computer)
+      puts "       |#{human.mark.center(16)}|#{computer.mark.center(16)}|"
     end
   
-    def human_marking_line
+    def human_marking_lines(human, computer)
       markings = human.sequence.size
       (0...markings-1).each do |index|
-        puts "| #{human.sequence[index]}    |  #{computer.sequence[index]}     |"
+        puts "       |#{human.mark.center(16)}|#{computer.mark.center(16)}|"
+        puts "       |#{human.sequence[index].to_s.center(16)}|#{computer.sequence[index].to_s.center(16)}|"
         separating_line
       end
-      puts "| #{human.sequence.last}    |       |"
+      puts "       | #{human.sequence.last}    |       |"
       separating_line
     end
   
-    def computer_marking_line
+    def computer_marking_lines(human, computer)
       markings = computer.sequence.size
       (0...markings).each do |index|
-        puts "| #{human.sequence[index]}    |  #{computer.sequence[index]}     |"
+        puts "       | #{human.sequence[index].to_s.center(16)}|#{computer.sequence[index].to_s.center(16)}|"
         separating_line
       end
     end
       
-    def show_marking(player)
+    def show_initial_marking(human, computer)
+      skip
+      puts "Marker Board".center(49)
       separating_line
-      names_line
-      marks_lines
+      names_line(human, computer)
+      marks_lines(human, computer)
       separating_line
-      player.class == Human ? human_marking_line : computer_marking_line
-  
+    end
+
+    def show_marking(human, computer)
+      show_initial_marking(human, computer)
+      human.sequence.size > computer.sequence.size ? human_marking_lines(human, computer) : computer_marking_lines(human, computer)
+      skip
     end
   
     def play_again?
@@ -233,20 +243,22 @@ module Displayable
       show_squares
       human = Human.new
       computer = Computer.new
+      grid = initialize_grid
       loop do
-        grid = initialize_grid
-        clear_screen 
+        clear_screen
+        show_initial_marking(human, computer)
+        skip
         display_grid!(grid)
         loop do
           marking!(human, grid)
-          show_marking(human)
+          show_marking(human, computer)
           display_grid!(grid)
           if winner_or_tie?
             display_winner
             break
           end
           marking!(computer, grid)
-          show_marking
+          show_marking(human, computer)
           display_grid_state
           if winner_or_tie?
             display_winner
