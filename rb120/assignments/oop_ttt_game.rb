@@ -1,3 +1,5 @@
+require 'pry'
+
 module Displayable
     def prompt(message)
       puts "> #{message}"
@@ -17,19 +19,20 @@ module Displayable
   
   end
   class Players
+    include Displayable
     attr_accessor :mark, :name, :sequence
     COMPUTER_NAMES = %w(Robocop Terminator MyRobot Robottina)
   
     def initialize
       @sequence = []
+      @human_mark = ''
       settings
     end
   
   end
   
   class Human < Players
-  include Displayable
-  
+
     def settings
       set_name
       set_mark
@@ -41,7 +44,6 @@ module Displayable
       option = ''
       loop do
         option = gets.chomp.upcase
-        beep
         break if %w(X O).include? option
         prompt("Sorry, wrong option, just enter X or O")
       end
@@ -65,26 +67,28 @@ module Displayable
   end
   
   class Computer < Players
-    include Displayable
+
+    attr_reader :human_mark
   
     def settings
       set_mark
       set_name
     end
-  
+
     def set_mark
-      self.mark = (human.mark == 'X' ?  'O' : 'X')
+      self.mark = (human_mark == 'X' ?  'O' : 'X')
     end
   
     def set_name
       self.name = Players::COMPUTER_NAMES.sample
-      beep
     end
   
   end
   
   class Game
     include Displayable
+
+    attr_accessor :human, :computer
   
     def initialize_grid
       board = {}
