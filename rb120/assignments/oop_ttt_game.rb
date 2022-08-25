@@ -2,6 +2,7 @@ require 'pry'
 
 module Displayable
     def prompt(message)
+      skip
       puts "> #{message}"
     end
   
@@ -15,6 +16,11 @@ module Displayable
 
     def skip
       puts ""
+    end
+
+    def any_key_to_continue?
+      prompt("Press any key to continue")
+      gets.chomp.match?(/.+/)
     end
   
   end
@@ -39,7 +45,8 @@ module Displayable
     end
   
     def set_mark
-      prompt("As your game mark would you want X or O:")
+      clear_screen
+      prompt("As your game's mark, would you want X or O?")
       skip
       option = ''
       loop do
@@ -48,9 +55,11 @@ module Displayable
         prompt("Sorry, wrong option, just enter X or O")
       end
       self.mark = option
+      any_key_to_continue?
     end
   
     def set_name
+      clear_screen
       prompt("Please enter your name:")
       skip
       input = ''
@@ -61,6 +70,7 @@ module Displayable
         prompt("Sorry, you must provide a player name")
       end
       self.name = input
+      any_key_to_continue?
     end
   
   
@@ -97,28 +107,32 @@ module Displayable
     end
   
     def display_grid!(grid)
-      puts "|     |     |     |"
-      puts "|  #{grid[1]}  |  #{grid[2]}  |  #{grid[3]}  |"
-      puts "|     |     |     |"
-      puts "|-----|-----|-----|"
-      puts "|     |     |     |"
-      puts "|  #{grid[4]}  |  #{grid[5]}  |  #{grid[6]}  |"
-      puts "|     |     |     |"
-      puts "|-----|-----|-----|"
-      puts "|     |     |     |"
-      puts "|  #{grid[7]}  |  #{grid[8]}  |  #{grid[9]}  |"
-      puts "|     |     |     |"
+      prompt("        Current board")
+      skip
+      puts "       |     |     |     |"
+      puts "       |  #{grid[1]}  |  #{grid[2]}  |  #{grid[3]}  |"
+      puts "       |     |     |     |"
+      puts "       |-----|-----|-----|"
+      puts "       |     |     |     |"
+      puts "       |  #{grid[4]}  |  #{grid[5]}  |  #{grid[6]}  |"
+      puts "       |     |     |     |"
+      puts "       |-----|-----|-----|"
+      puts "       |     |     |     |"
+      puts "       |  #{grid[7]}  |  #{grid[8]}  |  #{grid[9]}  |"
+      puts "       |     |     |     |"
+      skip
     end
   
     def show_squares
+      clear_screen
       prompt("To play you'll have to put your mark on one of the following square numbers:")
       skip
-      puts "| 1 | 2 | 3 |"
-      puts "|---|---|---|"
-      puts "| 4 | 5 | 6 |"
-      puts "|---|---|---|"
-      puts "| 7 | 8 | 9 |"
-      skip
+      puts "       | 1 | 2 | 3 |"
+      puts "       |---|---|---|"
+      puts "       | 4 | 5 | 6 |"
+      puts "       |---|---|---|"
+      puts "       | 7 | 8 | 9 |"
+      any_key_to_continue?
     end
   
     def get_available_squares(grid)
@@ -210,9 +224,8 @@ module Displayable
   
     def display_welcome_message
       clear_screen
-      skip
       prompt("Welcome to the Tic Tac Toe game")
-      skip
+      clear_screen if any_key_to_continue?
     end
   
     def play
@@ -221,7 +234,8 @@ module Displayable
       human = Human.new
       computer = Computer.new
       loop do
-        grid = initialize_grid 
+        grid = initialize_grid
+        clear_screen 
         display_grid!(grid)
         loop do
           marking!(human, grid)
