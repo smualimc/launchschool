@@ -96,20 +96,18 @@ module Displayable
       board
     end
   
-    grid = {1 => ' ', 2 => ' ', 3 => ' ', 4 => ' ', 5 => ' ', 6 => ' ', 7 => ' ', 8 => ' ', 9 => ' '}
-  
     def display_grid!(grid)
-      "  |     |     |     |
-      |  #{grid[1]}  |  #{grid[2]}  |  #{grid[3]}  |
-      |     |     |     |
-      |-----|-----|-----|
-      |     |     |     |
-      |  #{grid[4]}  |  #{grid[5]}  |  #{grid[6]}  |
-      |     |     |     |
-      |-----|-----|-----|
-      |     |     |     |
-      |  #{grid[7]}  |  #{grid[8]}  |  #{grid[9]}  |
-      |     |     |     |"
+      puts "|     |     |     |"
+      puts "|  #{grid[1]}  |  #{grid[2]}  |  #{grid[3]}  |"
+      puts "|     |     |     |"
+      puts "|-----|-----|-----|"
+      puts "|     |     |     |"
+      puts "|  #{grid[4]}  |  #{grid[5]}  |  #{grid[6]}  |"
+      puts "|     |     |     |"
+      puts "|-----|-----|-----|"
+      puts "|     |     |     |"
+      puts "|  #{grid[7]}  |  #{grid[8]}  |  #{grid[9]}  |"
+      puts "|     |     |     |"
     end
   
     def show_squares
