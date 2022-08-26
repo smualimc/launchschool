@@ -100,6 +100,10 @@ module Displayable
   class Game
     include Displayable
 
+    WINNER_SQUARES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
+                     [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
+                     [[3, 5, 7], [1, 5, 9]]              # diag
+
     attr_accessor :human, :computer, :grid
   
     def initialize_grid
@@ -164,19 +168,22 @@ module Displayable
   
     def marking!(player, grid)
       player.class == Human ? human_marks!(grid, player) : computer_marks!(grid, player)
-  
     end
   
-    def get_grid_state
-  
+    def human_won?(grid, human)
+      WINNER_SQUARES.any? do |subarray|
+        subarray.all? {|key| grid[key] == human.mark}
+      end
     end
-  
-    def winner_or_tie?
-  
+
+    def computer_won?(grid, computer)
+      WINNER_SQUARES.any? do |subarray|
+        subarray.all? {|key| grid[key] == computer.mark}
+      end
     end
-  
-    def display_winner
-  
+
+    def tie?(grid)
+      grid.none? {|_,value| value == ' '}
     end
   
     def separating_line
@@ -255,15 +262,22 @@ module Displayable
           marking!(human, grid)
           show_marking(human, computer)
           display_grid!(grid)
-          if winner_or_tie?
-            display_winner
+          if human_won?(grid, human)
+            prompt("#{human.name} is the winner!")
+            skip
             break
           end
           marking!(computer, grid)
           show_marking(human, computer)
-          get_grid_state
-          if winner_or_tie?
-            display_winner
+          display_grid!(grid)
+          if computer_won?(grid, computer)
+            prompt("#{computer.name} is the winner!")
+            skip
+            break
+          end
+          if tie?(grid)
+            prompt("There's no winner, thist time it was a tie!")
+            skip
             break
           end
         end
