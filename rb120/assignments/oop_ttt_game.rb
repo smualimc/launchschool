@@ -34,7 +34,6 @@ module Displayable
     @@human_mark = ''
   
     def initialize
-      @sequence = []
       settings
     end
   
@@ -110,6 +109,10 @@ module Displayable
       board = {}
       (1..9).each {|key| board[key] = ' '}
       board
+    end
+
+    def initialize_sequence(human, computer)
+      human.sequence, computer.sequence = [], []
     end
   
     def display_grid!(grid)
@@ -201,11 +204,10 @@ module Displayable
     def human_marking_lines(human, computer)
       markings = human.sequence.size
       (0...markings-1).each do |index|
-        #puts "       |#{human.mark.center(16)}|#{computer.mark.center(16)}|"
         puts "       |#{human.sequence[index].to_s.center(16)}|#{computer.sequence[index].to_s.center(16)}|"
         separating_line
       end
-      puts "       | #{human.sequence.last}    |       |"
+      puts "       |#{human.sequence.last.to_s.center(16)}|                |"
       separating_line
     end
   
@@ -234,11 +236,15 @@ module Displayable
     end
   
     def play_again?
-  
+      prompt("Would you like to play again? (y)es or any key to quit")
+      skip
+      answer = gets.chomp.downcase
+      answer.start_with?('y')
     end
   
     def display_end_message
-  
+      prompt("Thanks for playing Tic Tac Toe. Good Bye!")
+      skip
     end
   
     def display_welcome_message
@@ -252,8 +258,9 @@ module Displayable
       show_squares
       human = Human.new
       computer = Computer.new
-      grid = initialize_grid
       loop do
+        initialize_sequence(human, computer)
+        grid = initialize_grid
         clear_screen
         show_initial_marking(human, computer)
         skip
