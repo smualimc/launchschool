@@ -73,7 +73,7 @@ module Displayable
         break unless input.empty?
         prompt("Sorry, you must provide a player name")
       end
-      self.name = input
+      self.name = input.strip
       any_key_to_continue?
     end
   
@@ -143,7 +143,8 @@ module Displayable
   
     def human_marks!(grid, human)
       available_array = get_available_squares(grid)
-      prompt("Select one available square from: #{available_array}")
+      prompt("Select one available square from: #{available_array.map(&:to_s).join(' - ')}")
+      skip
       selection = ''
       loop do
         selection = gets.chomp
@@ -156,7 +157,7 @@ module Displayable
     end
   
     def computer_marks!(grid, computer)
-      selection = get_available_squares.sample
+      selection = get_available_squares(grid).sample
       grid[selection] = computer.mark
       computer.sequence << selection
     end
@@ -193,7 +194,7 @@ module Displayable
     def human_marking_lines(human, computer)
       markings = human.sequence.size
       (0...markings-1).each do |index|
-        puts "       |#{human.mark.center(16)}|#{computer.mark.center(16)}|"
+        #puts "       |#{human.mark.center(16)}|#{computer.mark.center(16)}|"
         puts "       |#{human.sequence[index].to_s.center(16)}|#{computer.sequence[index].to_s.center(16)}|"
         separating_line
       end
@@ -204,7 +205,7 @@ module Displayable
     def computer_marking_lines(human, computer)
       markings = computer.sequence.size
       (0...markings).each do |index|
-        puts "       | #{human.sequence[index].to_s.center(16)}|#{computer.sequence[index].to_s.center(16)}|"
+        puts "       |#{human.sequence[index].to_s.center(16)}|#{computer.sequence[index].to_s.center(16)}|"
         separating_line
       end
     end
@@ -219,6 +220,7 @@ module Displayable
     end
 
     def show_marking(human, computer)
+      clear_screen
       show_initial_marking(human, computer)
       human.sequence.size > computer.sequence.size ? human_marking_lines(human, computer) : computer_marking_lines(human, computer)
       skip
@@ -259,7 +261,7 @@ module Displayable
           end
           marking!(computer, grid)
           show_marking(human, computer)
-          display_grid_state
+          get_grid_state
           if winner_or_tie?
             display_winner
             break
