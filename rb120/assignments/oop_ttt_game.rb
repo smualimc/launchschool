@@ -320,6 +320,7 @@ class Game
   end
 
   def play_again?
+    clear_screen
     @first_game = false
     prompt("Would you like to play again? (y)es or any key to quit")
     skip
@@ -328,6 +329,7 @@ class Game
   end
 
   def display_end_message
+    clear_screen
     prompt("Thanks for playing Tic Tac Toe. Good Bye!")
     skip
   end
