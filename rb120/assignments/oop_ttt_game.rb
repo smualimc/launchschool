@@ -101,6 +101,9 @@ class Game
   include Displayable
   attr_accessor :human, :computer, :grid, :first_game
 
+  @@human_won = 0
+  @@computer_won = 0
+
   FILES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
   COLUMNS = [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
   DIAGONALS = [[3, 5, 7], [1, 5, 9]]
@@ -165,6 +168,7 @@ class Game
     puts "       | 4 | 5 | 6 |"
     puts "       |---|---|---|"
     puts "       | 7 | 8 | 9 |"
+    prompt("The first player who gets 5 points will be the game's winner")
     any_key_to_continue?
   end
 
@@ -219,25 +223,23 @@ class Game
     end
   end
 
-  def human_won?(grid, human)
+  def human_won?(grid, human, computer)
     winner = WINNER_SQUARES.any? do |subarray|
       subarray.all? { |key| grid[key] == human.mark }
     end
     if winner
-      prompt("#{human.name} is the winner!")
-      skip
+      @@human_won += 1
       return true
     end
     false
   end
 
-  def computer_won?(grid, computer)
+  def computer_won?(grid, human, computer)
     winner = WINNER_SQUARES.any? do |subarray|
       subarray.all? { |key| grid[key] == computer.mark }
     end
     if winner
-      prompt("#{computer.name} is the winner!")
-      skip
+      @@computer_won += 1
       return true
     end
     false
@@ -342,7 +344,10 @@ class Game
     @grid = initialize_grid
     initialize_sequence(human, computer)
     clear_screen
-    puts "Let's play again".center(GRID_LENGTH, ' * ') unless first_game
+    if !first_game
+      prompt("Partial standing: #{human.name}: #{@@human_won} - #{computer.name}: #{@@computer_won}")
+      skip
+    end
     show_initial_marking(human, computer)
     skip
     display_grid!(grid)
@@ -360,18 +365,44 @@ class Game
     display_grid!(grid)
   end
 
+  def show_partial_standing
+    prompt("Partial standing: #{human.name}: #{@@human_won} - #{computer.name}: #{@@computer_won}")
+    skip
+    any_key_to_continue?
+  end
+
+  def someone_won_game?
+    if @@human_won < 5 && @@computer_won < 5
+      show_partial_standing
+      return false
+    end
+    if @@human_won == 5
+      prompt("#{human.name} is the game's winner!")
+      any_key_to_continue?
+    else
+      prompt("#{computer.name} is the game's winner!")
+      any_key_to_continue?
+    end
+    @@human_won = 0
+    @@computer_won = 0
+    true
+  end
+
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def play
     play_init
     loop do
-      initial_display(human, computer, first_game)
       loop do
-        human_plays(grid, human, computer)
-        break if human_won?(grid, human)
-        computer_plays(grid, human, computer)
-        break if computer_won?(grid, computer)
-        break if tie?(grid)
+        initial_display(human, computer, first_game)
+        loop do
+          human_plays(grid, human, computer)
+          break if human_won?(grid, human, computer)
+          computer_plays(grid, human, computer)
+          break if computer_won?(grid, human, computer)
+          break if tie?(grid)
+        end
+        break if someone_won_game?
       end
       break unless play_again?
     end
