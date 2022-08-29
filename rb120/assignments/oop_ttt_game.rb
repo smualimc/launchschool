@@ -101,8 +101,14 @@ class Game
   include Displayable
   attr_accessor :human, :computer, :grid, :first_game
 
-  @@human_won = 0
-  @@computer_won = 0
+  def initialize
+    initialize_players_points
+  end
+
+  def initialize_players_points
+    @@human_won = 0
+    @@computer_won = 0
+  end
 
   FILES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
   COLUMNS = [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
@@ -383,8 +389,7 @@ class Game
       prompt("#{computer.name} is the game's winner!")
       any_key_to_continue?
     end
-    @@human_won = 0
-    @@computer_won = 0
+    initialize_players_points
     true
   end
 
