@@ -1,6 +1,4 @@
 require 'pry'
-require 'colorize'
-require 'colorized_string'
 
 module Displayable
   def prompt(message)
@@ -174,10 +172,16 @@ class Game
     grid.select { |_, value| value == ' ' }.keys
   end
 
+  def joinor(ary)
+    left = ary[0..-2].join(', ')
+    right = (ary.size == 1 ? ary.first.to_s : " or #{ary[-1]}")
+    left + right
+  end
+
   def available_squares(grid)
     available_array = get_available_squares(grid)
     message = "Select one available square from:"
-    prompt("#{message} #{available_array.map(&:to_s).join(' - ')}")
+    prompt("#{message} #{joinor(available_array)}")
     skip
     available_array
   end
