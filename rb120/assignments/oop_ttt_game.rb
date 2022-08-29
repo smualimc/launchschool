@@ -116,10 +116,11 @@ class Game
   WINNER_SQUARES = FILES + COLUMNS + DIAGONALS
   GRID_TITLE = "Current playing board"
   GRID_LENGTH = 49
+  INITIAL_MARK = ' '
 
   def initialize_grid
     board = {}
-    (1..9).each { |key| board[key] = ' ' }
+    (1..9).each { |key| board[key] = INITIAL_MARK }
     board
   end
 
@@ -178,7 +179,7 @@ class Game
     any_key_to_continue?
   end
 
-  def get_available_squares(grid)
+  def get_available_squares
     grid.select { |_, value| value == ' ' }.keys
   end
 
@@ -188,8 +189,8 @@ class Game
     left + right
   end
 
-  def available_squares(grid)
-    available_array = get_available_squares(grid)
+  def available_squares
+    available_array = get_available_squares
     message = "Select one available square from:"
     prompt("#{message} #{joinor(available_array)}")
     skip
@@ -197,7 +198,7 @@ class Game
   end
 
   def choose_move(grid)
-    available_array = available_squares(grid)
+    available_array = available_squares
     selection = ''
     loop do
       selection = gets.chomp
@@ -215,8 +216,19 @@ class Game
     human.sequence << key
   end
 
+  def aidefense
+    WINNER_SQUARES.each do |subarray|
+      values_subarray = grid.values_at(*subarray)
+      if values_subarray.count(human.mark) == 2 && values_subarray.count(INITIAL_MARK) == 1
+        values_subarray_key = values_subarray.index(INITIAL_MARK)
+        return subarray[values_subarray_key]
+      end
+    end
+    get_available_squares.sample
+  end
+
   def computer_marks!(grid, computer)
-    selection = get_available_squares(grid).sample
+    selection = aidefense
     grid[selection] = computer.mark
     computer.sequence << selection
   end
