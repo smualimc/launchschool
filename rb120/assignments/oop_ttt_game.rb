@@ -308,6 +308,7 @@ class Game
   end
 
   def play_again?
+    @first_game = false
     prompt("Would you like to play again? (y)es or any key to quit")
     skip
     answer = gets.chomp.downcase
@@ -368,7 +369,6 @@ class Game
         break if computer_won?(grid, computer)
         break if tie?(grid)
       end
-      @first_game = false
       break unless play_again?
     end
     display_end_message
