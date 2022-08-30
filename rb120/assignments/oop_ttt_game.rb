@@ -105,13 +105,28 @@ class Game
     initialize_players_points
   end
 
-  def set_starter
+  def human_set_starter
     clear_screen
     option = ''
     prompt("Would yo like to start playing? (y)es or any key to leave the computer starts")
     skip
     option = gets.chomp.downcase
     @starter = option.start_with?('y') ? 'human' : 'computer'
+  end
+
+  def computer_set_starter
+    @starter = ['human', 'computer'].sample
+    if @starter == 'human'
+      prompt("Computer has decided that you start first")
+    else
+      prompt("Computer has decided to start playing first")
+    end
+    any_key_to_continue?
+  end
+
+  def set_starter
+    who_sets = [1, 2].sample
+    who_sets == 1 ? human_set_starter : computer_set_starter
   end
 
   def initialize_players_points
@@ -264,6 +279,7 @@ class Game
     end
     if winner
       @@human_won += 1
+      show_partial_standing unless @@human_won == 5
       return true
     end
     false
@@ -275,6 +291,7 @@ class Game
     end
     if winner
       @@computer_won += 1
+      show_partial_standing unless @@computer_won == 5
       return true
     end
     false
@@ -285,6 +302,7 @@ class Game
     if tie
       prompt("There's no winner, thist time it was a tie!")
       skip
+      any_key_to_continue?
       return true
     end
     false
@@ -373,8 +391,8 @@ class Game
     display_welcome_message
     show_squares
     @human = Human.new
-    set_starter
     @computer = Computer.new
+    set_starter
     @first_game = true
   end
 
@@ -411,7 +429,7 @@ class Game
 
   def someone_won_game?
     if @@human_won < 5 && @@computer_won < 5
-      show_partial_standing
+      #show_partial_standing
       return false
     end
     if @@human_won == 5
@@ -429,6 +447,7 @@ class Game
     loop do
       human_plays(grid, human, computer)
       break if human_won?(grid, human, computer)
+      break if tie?(grid)
       computer_plays(grid, human, computer)
       break if computer_won?(grid, human, computer)
       break if tie?(grid)
@@ -442,6 +461,7 @@ class Game
       break if tie?(grid)
       human_plays(grid, human, computer)
       break if human_won?(grid, human, computer)
+      break if tie?(grid)
     end
   end
 
