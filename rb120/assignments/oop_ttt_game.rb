@@ -216,19 +216,26 @@ class Game
     human.sequence << key
   end
 
-  def aidefense
-    WINNER_SQUARES.each do |subarray|
+  def smart_computer_moves
+    WINNER_SQUARES.each do |subarray| # first: attempt to win at once
+      values_subarray = grid.values_at(*subarray)
+      if values_subarray.count(computer.mark) == 2 && values_subarray.count(INITIAL_MARK) == 1
+        values_subarray_key = values_subarray.index(INITIAL_MARK)
+        return subarray[values_subarray_key]
+      end
+    end
+    WINNER_SQUARES.each do |subarray| # second: defense a critical position
       values_subarray = grid.values_at(*subarray)
       if values_subarray.count(human.mark) == 2 && values_subarray.count(INITIAL_MARK) == 1
         values_subarray_key = values_subarray.index(INITIAL_MARK)
         return subarray[values_subarray_key]
       end
     end
-    get_available_squares.sample
+    available_squares.sample # nothing to attack nor to defend, then a random move
   end
 
   def computer_marks!(grid, computer)
-    selection = aidefense
+    selection = smart_computer_moves
     grid[selection] = computer.mark
     computer.sequence << selection
   end
