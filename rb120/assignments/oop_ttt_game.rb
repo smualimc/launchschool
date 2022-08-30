@@ -231,7 +231,8 @@ class Game
         return subarray[values_subarray_key]
       end
     end
-    available_squares.sample # nothing to attack nor to defend, then a random move
+    return grid[5] = computer.mark if grid[5] == INITIAL_MARK # trying to take position 5
+    available_squares.sample # if nothing works, then it does a random move
   end
 
   def computer_marks!(grid, computer)
