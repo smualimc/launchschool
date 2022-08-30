@@ -10,10 +10,6 @@ module Displayable
     system 'clear'
   end
 
-  def beep
-    puts 7.chr
-  end
-
   def skip
     puts ""
   end
@@ -115,6 +111,7 @@ class Game
   end
 
   def computer_set_starter
+    clear_screen
     @starter = ['human', 'computer'].sample
     if @starter == 'human'
       prompt("Computer has decided that you start first")
