@@ -422,7 +422,8 @@ class Game
   end
 
   def show_partial_standing
-    prompt("Partial standing: #{human.name}: #{@@human_won} - #{computer.name}: #{@@computer_won}")
+    skip
+    puts "Partial Standings <<<<< #{human.name}: #{@@human_won} - #{computer.name}: #{@@computer_won} >>>>>"
     skip
     any_key_to_continue?
   end
@@ -466,8 +467,7 @@ class Game
   end
 
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
+
   def play
     play_init
     loop do
@@ -480,8 +480,7 @@ class Game
     end
     display_end_message
   end
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/AbcSize
+
 end
 
 Game.new.play
