@@ -103,8 +103,9 @@ class Game
 
   def human_set_starter
     clear_screen
-    option = ''
+    # rubocop:disable Layout/LineLength
     prompt("Would yo like to start playing? (y)es or any key to leave the computer starts")
+    # rubocop:enable Layout/LineLength
     skip
     option = gets.chomp.downcase
     @starter = option.start_with?('y') ? 'human' : 'computer'
@@ -177,7 +178,7 @@ class Game
     puts "|-----|-----|-----|".center(GRID_LENGTH)
   end
 
-  def display_grid!(grid)
+  def display_grid!
     grid_heading
     display_row!(grid, 0)
     grid_separation
@@ -200,7 +201,7 @@ class Game
     any_key_to_continue?
   end
 
-  def get_available_squares
+  def grab_available_squares
     grid.select { |_, value| value == ' ' }.keys
   end
 
@@ -211,14 +212,14 @@ class Game
   end
 
   def available_squares
-    available_array = get_available_squares
+    available_array = grab_available_squares
     message = "Select one available square from:"
     prompt("#{message} #{joinor(available_array)}")
     skip
     available_array
   end
 
-  def choose_move(grid)
+  def choose_move
     available_array = available_squares
     selection = ''
     loop do
@@ -231,46 +232,62 @@ class Game
     selection
   end
 
-  def human_marks!(grid, human)
-    key = choose_move(grid).to_i
+  def human_marks!
+    key = choose_move.to_i
     grid[key] = human.mark
     human.sequence << key
   end
 
-  def smart_computer_moves
-    WINNER_SQUARES.each do |subarray| # first: attempt to win at once
+  # rubocop:disable Layout/LineLength
+  def ai_attack
+    WINNER_SQUARES.each do |subarray|
       values_subarray = grid.values_at(*subarray)
       if values_subarray.count(computer.mark) == 2 && values_subarray.count(INITIAL_MARK) == 1
         values_subarray_key = values_subarray.index(INITIAL_MARK)
         return subarray[values_subarray_key]
       end
     end
-    WINNER_SQUARES.each do |subarray| # second: defense a critical position
+    false
+  end
+  # rubocop:enable Layout/LineLength
+
+  # rubocop:disable Layout/LineLength
+  def ai_defense
+    WINNER_SQUARES.each do |subarray|
       values_subarray = grid.values_at(*subarray)
       if values_subarray.count(human.mark) == 2 && values_subarray.count(INITIAL_MARK) == 1
         values_subarray_key = values_subarray.index(INITIAL_MARK)
         return subarray[values_subarray_key]
       end
     end
+    false
+  end
+  # rubocop:enable Layout/LineLength
+
+  # rubocop:disable Layout/LineLength
+  def smart_computer_moves
+    return ai_attack if ai_attack
+    return ai_defense if ai_defense
     return grid[5] = computer.mark if grid[5] == INITIAL_MARK # trying to take position 5
     available_squares.sample # if nothing works, then it does a random move
   end
+  # rubocop:enable Layout/LineLength
 
-  def computer_marks!(grid, computer)
+  def computer_marks!
     selection = smart_computer_moves
     grid[selection] = computer.mark
     computer.sequence << selection
   end
 
-  def marking!(player, grid)
+  def marking!(player)
     if player.instance_of?(Human)
-      human_marks!(grid, player)
+      human_marks!
     else
-      computer_marks!(grid, player)
+      computer_marks!
     end
   end
 
-  def human_won?(grid, human, computer)
+  def human_won?
     winner = WINNER_SQUARES.any? do |subarray|
       subarray.all? { |key| grid[key] == human.mark }
     end
@@ -282,7 +299,7 @@ class Game
     false
   end
 
-  def computer_won?(grid, human, computer)
+  def computer_won?
     winner = WINNER_SQUARES.any? do |subarray|
       subarray.all? { |key| grid[key] == computer.mark }
     end
@@ -294,7 +311,7 @@ class Game
     false
   end
 
-  def tie?(grid)
+  def tie?
     tie = grid.none? { |_, value| value == ' ' }
     if tie
       prompt("There's no winner, thist time it was a tie!")
@@ -309,15 +326,15 @@ class Game
     puts "       |----------------|----------------|"
   end
 
-  def names_line(human, computer)
+  def names_line
     puts "       |#{human.name.center(16)}|#{computer.name.center(16)}|"
   end
 
-  def marks_lines(human, computer)
+  def marks_lines
     puts "       |#{human.mark.center(16)}|#{computer.mark.center(16)}|"
   end
 
-  def lines_but_last(human, computer)
+  def lines_but_last
     markings = human.sequence.size
     (0...markings - 1).each do |index|
       # rubocop:disable Layout/LineLength
@@ -327,13 +344,13 @@ class Game
     end
   end
 
-  def human_marking_lines(human, computer)
-    lines_but_last(human, computer)
+  def human_marking_lines
+    lines_but_last
     puts "       |#{human.sequence.last.to_s.center(16)}|                |"
     separating_line
   end
 
-  def computer_marking_lines(human, computer)
+  def computer_marking_lines
     markings = computer.sequence.size
     (0...markings).each do |index|
       # rubocop:disable Layout/LineLength
@@ -343,22 +360,22 @@ class Game
     end
   end
 
-  def show_initial_marking(human, computer)
+  def show_initial_marking
     skip
     puts "Marker Board".center(49)
     separating_line
-    names_line(human, computer)
-    marks_lines(human, computer)
+    names_line
+    marks_lines
     separating_line
   end
 
-  def show_marking(human, computer)
+  def show_marking
     clear_screen
-    show_initial_marking(human, computer)
+    show_initial_marking
     if human.sequence.size > computer.sequence.size
-      human_marking_lines(human, computer)
+      human_marking_lines
     else
-      computer_marking_lines(human, computer)
+      computer_marking_lines
     end
     skip
   end
@@ -393,7 +410,8 @@ class Game
     @first_game = true
   end
 
-  def initial_display(human, computer, first_game)
+  # rubocop:disable Layout/LineLength
+  def initial_display(first_game)
     @grid = initialize_grid
     initialize_sequence(human, computer)
     clear_screen
@@ -401,75 +419,72 @@ class Game
       prompt("Partial standing: #{human.name}: #{@@human_won} - #{computer.name}: #{@@computer_won}")
       skip
     end
-    show_initial_marking(human, computer)
+    show_initial_marking
     skip
-    display_grid!(grid)
+    display_grid!
+  end
+  # rubocop:enable Layout/LineLength
+
+  def human_plays
+    marking!(human)
+    show_marking
+    display_grid!
   end
 
-  def human_plays(grid, human, computer)
-    marking!(human, grid)
-    show_marking(human, computer)
-    display_grid!(grid)
+  def computer_plays
+    marking!(computer)
+    show_marking
+    display_grid!
   end
 
-  def computer_plays(grid, human, computer)
-    marking!(computer, grid)
-    show_marking(human, computer)
-    display_grid!(grid)
-  end
-
+  # rubocop:disable Layout/LineLength
   def show_partial_standing
     skip
     puts "Partial Standings <<<<< #{human.name}: #{@@human_won} - #{computer.name}: #{@@computer_won} >>>>>"
     skip
     any_key_to_continue?
   end
+  # rubocop:enable Layout/LineLength
 
   def someone_won_game?
-    if @@human_won < 5 && @@computer_won < 5
-      #show_partial_standing
-      return false
-    end
+    return false if @@human_won < 5 && @@computer_won < 5
     if @@human_won == 5
       prompt("#{human.name} is the game's winner!")
-      any_key_to_continue?
     else
       prompt("#{computer.name} is the game's winner!")
-      any_key_to_continue?
     end
+    any_key_to_continue?
     initialize_players_points
     true
   end
 
   def human_starts
     loop do
-      human_plays(grid, human, computer)
-      break if human_won?(grid, human, computer)
-      break if tie?(grid)
-      computer_plays(grid, human, computer)
-      break if computer_won?(grid, human, computer)
-      break if tie?(grid)
+      human_plays
+      break if human_won?
+      break if tie?
+      computer_plays
+      break if computer_won?
+      break if tie?
     end
   end
 
   def computer_starts
     loop do
-      computer_plays(grid, human, computer)
-      break if computer_won?(grid, human, computer)
-      break if tie?(grid)
-      human_plays(grid, human, computer)
-      break if human_won?(grid, human, computer)
-      break if tie?(grid)
+      computer_plays
+      break if computer_won?
+      break if tie?
+      human_plays
+      break if human_won?
+      break if tie?
     end
   end
-
-
 
   def play
     play_init
     loop do
       loop do
-        initial_display(human, computer, first_game)
+        initial_display(first_game)
         starter == 'human' ? human_starts : computer_starts
         break if someone_won_game?
       end
@@ -477,7 +492,6 @@ class Game
     end
     display_end_message
   end
-
 end
 
 Game.new.play
