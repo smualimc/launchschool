@@ -99,10 +99,19 @@ end
 
 class Game
   include Displayable
-  attr_accessor :human, :computer, :grid, :first_game
+  attr_accessor :human, :computer, :grid, :first_game, :starter
 
   def initialize
     initialize_players_points
+  end
+
+  def set_starter
+    clear_screen
+    option = ''
+    prompt("Would yo like to start playing? (y)es or any key to leave the computer starts")
+    skip
+    option = gets.chomp.downcase
+    @starter = option.start_with?('y') ? 'human' : 'computer'
   end
 
   def initialize_players_points
@@ -364,6 +373,7 @@ class Game
     display_welcome_message
     show_squares
     @human = Human.new
+    set_starter
     @computer = Computer.new
     @first_game = true
   end
@@ -415,6 +425,27 @@ class Game
     true
   end
 
+  def human_starts
+    loop do
+      human_plays(grid, human, computer)
+      break if human_won?(grid, human, computer)
+      computer_plays(grid, human, computer)
+      break if computer_won?(grid, human, computer)
+      break if tie?(grid)
+    end
+  end
+
+  def computer_starts
+    loop do
+      computer_plays(grid, human, computer)
+      break if computer_won?(grid, human, computer)
+      break if tie?(grid)
+      human_plays(grid, human, computer)
+      break if human_won?(grid, human, computer)
+    end
+  end
+
+
   # rubocop:disable Metrics/MethodLength
   # rubocop:disable Metrics/AbcSize
   def play
@@ -422,13 +453,7 @@ class Game
     loop do
       loop do
         initial_display(human, computer, first_game)
-        loop do
-          human_plays(grid, human, computer)
-          break if human_won?(grid, human, computer)
-          computer_plays(grid, human, computer)
-          break if computer_won?(grid, human, computer)
-          break if tie?(grid)
-        end
+        starter == 'human' ? human_starts : computer_starts
         break if someone_won_game?
       end
       break unless play_again?
