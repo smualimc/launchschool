@@ -9,7 +9,7 @@ module Displayable
     skip
   end
 
-  def skip 
+  def skip
     puts ""
   end
 end
@@ -58,7 +58,7 @@ class Dealer < Gamblers
 end
 
 class Cards
-attr_accessor :deck
+  attr_accessor :deck
 
   REVERSE = "\uF0A0"
   SPADE = "\u2660"
@@ -86,19 +86,7 @@ class Game
   def play
     welcome_message
     new_game
-    loop do
-      new_deck 
-      loop do
-        initial_deal
-        player_turn
-        break if player.bust
-        dealer_turn
-        break
-      end
-      show_winner
-      break unless play_again?
-      first_game = false
-    end
+    playing
     end_message
   end
 
@@ -113,6 +101,17 @@ class Game
     @first_game = true
   end
 
+  def playing
+    loop do
+      new_deck
+      initial_deal
+      player_turn
+      dealer_turn
+      show_winner
+      break unless play_again?
+    end
+  end
+
   def new_deck
     @cards = Cards.new
   end
@@ -123,11 +122,11 @@ class Game
   end
 
   def player_deal
-    2.times {player.hand.push(cards.deck.delete(cards.deck.sample))}
+    2.times { player.hand.push(cards.deck.delete(cards.deck.sample)) }
   end
 
   def dealer_deal
-    2.times {dealer.hand.push(cards.deck.delete(cards.deck.sample))}
+    2.times { dealer.hand.push(cards.deck.delete(cards.deck.sample)) }
   end
 
   def player_turn
@@ -149,7 +148,9 @@ class Game
 
   def show_player_hand
     clear_screen
+    # rubocop:disable Layout/LineLength
     prompt("We are glad that you want keep playing #{player.name}") unless first_game
+    # rubocop:enable Layout/LineLength
     prompt("Cards on the table")
     prompt("#{player.name} cards: #{player.hand.join(' | ')}")
   end
@@ -168,21 +169,22 @@ class Game
     option == 'a' ? 'another' : 'stay'
   end
 
+  # rubocop:disable Metrics/AbcSize
   def new_deal(gambler)
     if gambler.instance_of?(Player)
-      player.hand.push(cards.deck.delete(cards.deck.sample))
+      player.hand << (cards.deck.delete(cards.deck.sample))
     else
-      dealer.hand.push(cards.deck.delete(cards.deck.sample))
+      dealer.hand << (cards.deck.delete(cards.deck.sample))
     end
   end
 
   def compute_hand(gambler)
     array = gambler.instance_of?(Player) ? player.hand : dealer.hand
-    values_array = array.map {|card| card.chars.first}
-    keys_array = values_array.map {|value| Cards::VALUES.index(value)}
-    weights_array = keys_array.map {|key| Cards::WEIGHTS[key]}
+    values_array = array.map(&:chop)
+    keys_array = values_array.map { |value| Cards::VALUES.index(value) }
+    weights_array = keys_array.map { |key| Cards::WEIGHTS[key] }
     weight = weights_array.sum
-    if weights_array.include?(1) && weight + 10 <= 21
+    if (weights_array.include?(1)) && ((weight + 10) <= 21)
       weight += 10
     end
     weight
@@ -190,19 +192,26 @@ class Game
 
   def dealer_turn
     loop do
-      break if player.bust
       show_hidden_cards
-      break if compute_hand(dealer) > compute_hand(player)
-      new_deal(dealer) if compute_hand(dealer) <= 17 && compute_hand(player) > compute_hand(dealer)
-      result = compute_hand(dealer)
-      dealer.bust = true if result > 21
-      break if player.bust || compute_hand(dealer) > 17
+      break if unnecessary_deal?
+      new_deal(dealer) if meets_rules?
+      dealer.bust = true if compute_hand(dealer) > 21
+      break if dealer.bust || compute_hand(dealer) > 16
     end
   end
+  # rubocop:enable Metrics/AbcSize
 
   def show_hidden_cards
     show_player_hand
     show_dealer_hand
+  end
+
+  def unnecessary_deal?
+    player.bust || (compute_hand(dealer) > compute_hand(player))
+  end
+
+  def meets_rules?
+    compute_hand(dealer) < 17 && (compute_hand(player) >= compute_hand(dealer))
   end
 
   def show_dealer_hand
@@ -211,14 +220,14 @@ class Game
 
   def show_winner
     if player.bust || dealer.bust
-      show_winner_by_busting
+      winner_by_busting
     else
-    show_winner_by_weight
+      winner_by_weight
     end
   end
 
-  def show_winner_by_busting
-    show_cards
+  def winner_by_busting
+    show_hidden_cards
     if player.bust
       prompt("#{player.name} busts, home won this time!")
     else
@@ -226,20 +235,43 @@ class Game
     end
   end
 
-  def show_winner_by_weight
-    if compute_hand(dealer) > compute_hand(player)
-      prompt("#{dealer.badge} won, he got #{compute_hand(dealer)}! points and you got just  #{compute_hand(player)}")
-    elsif compute_hand(dealer) < compute_hand(player)
-      prompt("#{player.name} won, you got #{compute_hand(player)}! points and he got just  #{compute_hand(dealer)}")
+  def winner_by_weight
+    show_hidden_cards
+    if dealer_won?
+      show_dealer_won
+    elsif dealer_lost?
+      show_player_won
     else
-      prompt("It was a tie, both of you got #{compute_hand(dealer)}, at least kept your money!")
+      show_tie
     end
   end
 
+  def dealer_won?
+    compute_hand(dealer) > compute_hand(player)
+  end
+
+  # rubocop: disable Layout/LineLength
+  def show_dealer_won
+    prompt("#{dealer.badge} won, he got #{compute_hand(dealer)} points and you got just  #{compute_hand(player)}")
+  end
+
+  def dealer_lost?
+    compute_hand(dealer) < compute_hand(player)
+  end
+
+  def show_player_won
+    prompt("#{player.name} won, you got #{compute_hand(player)} points and he got just  #{compute_hand(dealer)}")
+  end
+
+  def show_tie
+    prompt("It was a tie, both of you got #{compute_hand(dealer)}, at least kept your money!")
+  end
+  # rubocop:enable Layout/LineLength
+
   def play_again?
-    prompt("Would you like to play again? (y)es or any key to quit")
+    prompt("Would you like to play again? (y)es + Enter or just Enter to quit")
     option = gets.chomp.downcase
-    if option.start_with?('y')
+    if option == 'y'
       reset_hands
       return true
     end
@@ -247,12 +279,18 @@ class Game
   end
 end
 
+# rubocop:disable Lint/UselessAssignment
 def reset_hands
   player.hand = []
   dealer.hand = []
+  player.bust = false
+  dealer.bust = false
+  @first_game = false
 end
+# rubocop:enable Lint/UselessAssignment
 
 def end_message
+  clear_screen
   prompt('Thank you for playing Twenty-one, good bye!')
 end
 
