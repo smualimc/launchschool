@@ -103,7 +103,10 @@ class Game
   end
 
   def show_running_score
-    prompt("Running scores: #{player.name}: #{@player_points} - Dealer #{@dealer_points}")
+    msg = <<~HEREDOC
+  Running scores: #{player.name}: #{@player_points} - Dealer #{@dealer_points}
+    HEREDOC
+    prompt(msg)
   end
 
   def reset_scores
@@ -159,11 +162,15 @@ class Game
 
   def show_player_hand
     clear_screen
-    # rubocop:disable Layout/LineLength
-    prompt("We are glad that you want keep playing #{player.name}") unless first_game
-    # rubocop:enable Layout/LineLength
+    msg = <<~HEREDOC
+    We are glad that you want keep playing #{player.name}
+    HEREDOC
+    prompt(msg) unless first_game
     prompt("Cards on the table")
-    prompt("#{player.name} cards: #{player.hand.join(' | ')} = #{compute_hand(player)}")
+    msg = <<~HEREDOC
+    #{player.name} cards: #{player.hand.join(' | ')} = #{compute_hand(player)}
+    HEREDOC
+    prompt(msg)
   end
 
   def show_hidden_hand
@@ -180,12 +187,15 @@ class Game
     option == 'a' ? 'another' : 'stay'
   end
 
-  # rubocop:disable Metrics/AbcSize
+  def pick_random_card
+    cards.deck.delete(cards.deck.sample)
+  end
+
   def new_deal(gambler)
     if gambler.instance_of?(Player)
-      player.hand << (cards.deck.delete(cards.deck.sample))
+      player.hand << pick_random_card
     else
-      dealer.hand << (cards.deck.delete(cards.deck.sample))
+      dealer.hand << pick_random_card
     end
   end
 
@@ -210,7 +220,6 @@ class Game
       break if dealer.bust || compute_hand(dealer) > 16
     end
   end
-  # rubocop:enable Metrics/AbcSize
 
   def show_hidden_cards
     show_player_hand
@@ -226,7 +235,10 @@ class Game
   end
 
   def show_dealer_hand
-    prompt("#{dealer.badge} cards: #{dealer.hand.join(' | ')} = #{compute_hand(dealer)}")
+    msg = <<~HEREDOC
+    #{dealer.badge} cards: #{dealer.hand.join(' | ')} = #{compute_hand(dealer)}
+    HEREDOC
+    prompt(msg)
   end
 
   def show_winner
@@ -242,11 +254,11 @@ class Game
   end
 
   def dealer_scores
-    @dealer_points +=1
+    @dealer_points += 1
   end
 
   def increment_score(gambler)
-    gambler.instance_of?(Player)? player_scores : dealer_scores
+    gambler.instance_of?(Player) ? player_scores : dealer_scores
   end
 
   def winner_by_busting
@@ -277,9 +289,11 @@ class Game
     compute_hand(dealer) > compute_hand(player)
   end
 
-  # rubocop: disable Layout/LineLength
   def show_dealer_won
-    prompt("#{dealer.badge} won, he got #{compute_hand(dealer)} points and you got just  #{compute_hand(player)}")
+    msg = <<~HEREDOC
+    #{dealer.badge} won, he got #{compute_hand(dealer)} points and you got just  #{compute_hand(player)}"
+    HEREDOC
+    prompt(msg)
   end
 
   def dealer_lost?
@@ -287,13 +301,18 @@ class Game
   end
 
   def show_player_won
-    prompt("#{player.name} won, you got #{compute_hand(player)} points and he got just  #{compute_hand(dealer)}")
+    msg <<~HEREDOC
+    prompt("#{player.name} won, you got #{compute_hand(player)} points and he got just  #{compute_hand(dealer)}
+    HEREDOC
+    prompt(msg)
   end
 
   def show_tie
-    prompt("It was a tie, both of you got #{compute_hand(dealer)}, at least kept your money!")
+    msg = <<~HEREDOC
+    "It was a tie, both of you got #{compute_hand(dealer)}, at least kept your money!"
+    HEREDOC
+    prompt(msg)
   end
-  # rubocop:enable Layout/LineLength
 
   def play_again?
     prompt("Would you like to play again? (y)es + Enter or just Enter to quit")
@@ -306,7 +325,6 @@ class Game
   end
 end
 
-# rubocop:disable Lint/UselessAssignment
 def reset_hands
   player.hand = []
   dealer.hand = []
@@ -314,7 +332,6 @@ def reset_hands
   dealer.bust = false
   @first_game = false
 end
-# rubocop:enable Lint/UselessAssignment
 
 def end_message
   clear_screen
