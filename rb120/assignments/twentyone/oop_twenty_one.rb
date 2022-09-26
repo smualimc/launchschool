@@ -81,6 +81,11 @@ end
 class Game
   include Displayable
 
+  BUST_VALUE = 21
+  ENABLE_TO_PLAY = 16
+  ACE_ADDITIONAL_WEIGHT = 10
+  ACE = 1
+
   attr_accessor :cards, :dealer, :player, :first_game
 
   def play
@@ -150,7 +155,7 @@ class Game
       break if give_option == 'stay'
       new_deal(player)
       result = compute_hand(player)
-      player.bust = true if result > 21
+      player.bust = true if result > BUST_VALUE
       break if player.bust
     end
   end
@@ -205,7 +210,7 @@ class Game
     keys_array = values_array.map { |value| Cards::VALUES.index(value) }
     weights_array = keys_array.map { |key| Cards::WEIGHTS[key] }
     weight = weights_array.sum
-    if (weights_array.include?(1)) && ((weight + 10) <= 21)
+    if (weights_array.include?(ACE)) && ((weight + ACE_ADDITIONAL_WEIGHT) <= BUST_VALUE)
       weight += 10
     end
     weight
@@ -216,8 +221,8 @@ class Game
       show_hidden_cards
       break if unnecessary_deal?
       new_deal(dealer) if meets_rules?
-      dealer.bust = true if compute_hand(dealer) > 21
-      break if dealer.bust || compute_hand(dealer) > 16
+      dealer.bust = true if compute_hand(dealer) > BUST_VALUE
+      break if dealer.bust || compute_hand(dealer) > ENABLE_TO_PLAY
     end
   end
 
@@ -301,7 +306,7 @@ class Game
   end
 
   def show_player_won
-    msg <<~HEREDOC
+    msg = <<~HEREDOC
     prompt("#{player.name} won, you got #{compute_hand(player)} points and he got just  #{compute_hand(dealer)}
     HEREDOC
     prompt(msg)
