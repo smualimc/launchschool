@@ -83,7 +83,7 @@ class Game
 
   BUST_VALUE = 21
   ENABLE_TO_PLAY = 16
-  ACE_ADDITIONAL_WEIGHT = 10
+  ACE_PLUS = 10
   ACE = 1
 
   attr_accessor :cards, :dealer, :player, :first_game
@@ -207,11 +207,11 @@ class Game
   def compute_hand(gambler)
     dealed_cards = gambler.instance_of?(Player) ? player.hand : dealer.hand
     cards_values = dealed_cards.map(&:chop)
-    cards_keys_in_values = cards_values.map { |value| Cards::VALUES.index(value) }
-    cards_weights = cards_keys_in_values.map { |key| Cards::WEIGHTS[key] }
+    cards_keys = cards_values.map { |value| Cards::VALUES.index(value) }
+    cards_weights = cards_keys.map { |key| Cards::WEIGHTS[key] }
     weight = cards_weights.sum
-    if (cards_weights.include?(ACE)) && ((weight + ACE_ADDITIONAL_WEIGHT) <= BUST_VALUE)
-      weight += ACE_ADDITIONAL_WEIGHT
+    if (cards_weights.include?(ACE)) && ((weight + ACE_PLUS) <= BUST_VALUE)
+      weight += ACE_PLUS
     end
     weight
   end
