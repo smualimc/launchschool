@@ -152,7 +152,7 @@ class Game
     prompt("We are glad that you want keep playing #{player.name}") unless first_game
     # rubocop:enable Layout/LineLength
     prompt("Cards on the table")
-    prompt("#{player.name} cards: #{player.hand.join(' | ')}")
+    prompt("#{player.name} cards: #{player.hand.join(' | ')} = #{compute_hand(player)}")
   end
 
   def show_hidden_hand
@@ -215,7 +215,7 @@ class Game
   end
 
   def show_dealer_hand
-    prompt("#{dealer.badge} cards: #{dealer.hand.join(' | ')}")
+    prompt("#{dealer.badge} cards: #{dealer.hand.join(' | ')} = #{compute_hand(dealer)}")
   end
 
   def show_winner
