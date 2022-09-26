@@ -99,6 +99,16 @@ class Game
     @dealer = Dealer.new
     @player = Player.new
     @first_game = true
+    reset_scores
+  end
+
+  def show_running_score
+    prompt("Running scores: #{player.name}: #{@player_points} - Dealer #{@dealer_points}")
+  end
+
+  def reset_scores
+    @player_points = 0
+    @dealer_points = 0
   end
 
   def playing
@@ -108,6 +118,7 @@ class Game
       player_turn
       dealer_turn
       show_winner
+      show_running_score
       break unless play_again?
     end
   end
@@ -226,12 +237,26 @@ class Game
     end
   end
 
+  def player_scores
+    @player_points += 1
+  end
+
+  def dealer_scores
+    @dealer_points +=1
+  end
+
+  def increment_score(gambler)
+    gambler.instance_of?(Player)? player_scores : dealer_scores
+  end
+
   def winner_by_busting
     show_hidden_cards
     if player.bust
       prompt("#{player.name} busts, home won this time!")
+      increment_score(dealer)
     else
       prompt("Dealer busts, #{player.name} won!")
+      increment_score(player)
     end
   end
 
@@ -239,8 +264,10 @@ class Game
     show_hidden_cards
     if dealer_won?
       show_dealer_won
+      increment_score(dealer)
     elsif dealer_lost?
       show_player_won
+      increment_score(player)
     else
       show_tie
     end
