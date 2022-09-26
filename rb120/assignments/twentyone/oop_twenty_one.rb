@@ -205,13 +205,13 @@ class Game
   end
 
   def compute_hand(gambler)
-    array = gambler.instance_of?(Player) ? player.hand : dealer.hand
-    values_array = array.map(&:chop)
-    keys_array = values_array.map { |value| Cards::VALUES.index(value) }
-    weights_array = keys_array.map { |key| Cards::WEIGHTS[key] }
-    weight = weights_array.sum
-    if (weights_array.include?(ACE)) && ((weight + ACE_ADDITIONAL_WEIGHT) <= BUST_VALUE)
-      weight += 10
+    dealed_cards = gambler.instance_of?(Player) ? player.hand : dealer.hand
+    cards_values = dealed_cards.map(&:chop)
+    cards_keys_in_values = cards_values.map { |value| Cards::VALUES.index(value) }
+    cards_weights = cards_keys_in_values.map { |key| Cards::WEIGHTS[key] }
+    weight = cards_weights.sum
+    if (cards_weights.include?(ACE)) && ((weight + ACE_ADDITIONAL_WEIGHT) <= BUST_VALUE)
+      weight += ACE_ADDITIONAL_WEIGHT
     end
     weight
   end
